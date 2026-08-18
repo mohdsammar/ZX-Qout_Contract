@@ -541,8 +541,9 @@
 
       <div class="quotetotals">
         <div class="qtrow"><span data-t="quoteTotalBase">Base package (annual)</span><span id="qtBase">0</span></div>
-        <div class="qtrow"><span data-t="quoteTotalOneTime">One-time items</span><span id="qtOneTime">0</span></div>
         <div class="qtrow"><span data-t="quoteTotalRecurring">Additional recurring (annualized)</span><span id="qtRecurring">0</span></div>
+        <div class="qtrow qtrow-sub"><span data-t="quoteTotalAnnual">Total annual subscription</span><span id="qtAnnual">0</span></div>
+        <div class="qtrow"><span data-t="quoteTotalOneTime">One-time items</span><span id="qtOneTime">0</span></div>
         <div class="qtrow qtrow-grand"><span data-t="quoteTotalFirstYear">Estimated first-year total</span><span id="qtFirstYear">0</span></div>
         <div class="qtrow qtrow-sub"><span data-t="quoteTotalRenewal">Estimated ongoing annual renewal</span><span id="qtRenewal">0</span></div>
       </div>
@@ -719,7 +720,8 @@ en:{
   deliveryIncludedTitle:"Included delivery and support", deliveryIncludedBody:"Every selected package, integration, connection, or full module includes requirements confirmation, setup, configuration/build, implementation, testing, go-live, foundational training, and 24/7 technical support, subject to the approved scope of work.", deliveryIncludedShort:"Includes setup, build/configuration, implementation, testing, go-live, foundational training, and 24/7 support",
   unit_one_time:"One-time", unit_per_month:"Per month", unit_per_year:"Per year",
   quoteAddLine:"Add line",
-  quoteTotalBase:"Base package (annual)", quoteTotalOneTime:"One-time items", quoteTotalRecurring:"Additional recurring (annualized)",
+  quoteTotalBase:"Base package (annual)", quoteTotalOneTime:"Total one-time items", quoteTotalRecurring:"Additional recurring (annualized)",
+  quoteTotalAnnual:"Total annual subscription (package + annual additions)",
   quoteTotalFirstYear:"Estimated first-year total", quoteTotalRenewal:"Estimated ongoing annual renewal",
   quoteDisclaimer:"Estimate only — full modules and integrations are shown separately. Scope-priced items are confirmed after technical scoping. Valid 30 days from today.",
   quoteExportTitle:"Ready to send?", quoteExportSub:"Opens a separate, fully editable and printable quotation page — with VAT, signatures, and your stamp.",
@@ -793,7 +795,8 @@ ar:{
   deliveryIncludedTitle:"التنفيذ والدعم المشمولان", deliveryIncludedBody:"تشمل كل باقة أو عملية تكامل وربط أو وحدة كاملة يتم اختيارها: تأكيد المتطلبات، والإعداد، والتهيئة أو البناء، والتنفيذ، والاختبار، والإطلاق الفعلي، والتدريب التأسيسي، والدعم الفني على مدار الساعة طوال أيام الأسبوع، وفق نطاق العمل المعتمد.", deliveryIncludedShort:"يشمل الإعداد والبناء أو التهيئة والتنفيذ والاختبار والإطلاق والتدريب التأسيسي والدعم الفني 24/7",
   unit_one_time:"مرة واحدة", unit_per_month:"شهريًا", unit_per_year:"سنويًا",
   quoteAddLine:"إضافة بند",
-  quoteTotalBase:"الباقة الأساسية (سنويًا)", quoteTotalOneTime:"البنود لمرة واحدة", quoteTotalRecurring:"إضافات متكررة (محوّلة لسنوي)",
+  quoteTotalBase:"الباقة الأساسية (سنويًا)", quoteTotalOneTime:"إجمالي البنود لمرة واحدة", quoteTotalRecurring:"الإضافات والاشتراكات السنوية", 
+  quoteTotalAnnual:"إجمالي الاشتراك السنوي (الباقة + الإضافات السنوية)",
   quoteTotalFirstYear:"إجمالي السنة الأولى التقديري", quoteTotalRenewal:"التجديد السنوي التقديري المستمر",
   quoteDisclaimer:"تقدير أولي فقط — تظهر الوحدات الكاملة وعمليات التكامل والربط كبنود منفصلة، وتُؤكَّد البنود حسب النطاق بعد التحديد التقني. صالح لمدة 30 يومًا من تاريخ اليوم.",
   quoteExportTitle:"جاهز للإرسال؟", quoteExportSub:"يفتح صفحة عرض سعر منفصلة، قابلة للتعديل والطباعة بالكامل — مع الضريبة والتوقيعات والختم.",
@@ -1571,9 +1574,9 @@ function computeRecommendation(){
     const namesAr = advancedHR.map(v=>{ const opt=(q25def && q25def.opts || []).find(o=>o.val===v); return opt?opt.ar:v; });
     outOfScope.push({
       key:'emp_functions',
-      en:'Employee management — required functions: '+namesEn.join(', ')+'. Beyond the included payroll capacity; quoted as a separate scope.',
-      ar:'إدارة الموظفين — الوظائف المطلوبة: '+namesAr.join('، ')+'. تتجاوز سعة الرواتب المشمولة بالباقة، وتُسعّر كنطاق منفصل.',
-      typeKey:'hr', includedScope:true
+      en:'Employee management — required functions: '+namesEn.join(', ')+'. Annual subscription beyond the included payroll capacity.',
+      ar:'إدارة الموظفين — الوظائف المطلوبة: '+namesAr.join('، ')+'. اشتراك سنوي يتجاوز سعة الرواتب المشمولة بالباقة.',
+      typeKey:'hr', includedScope:true, unit:'per_year'
     });
   }
 
@@ -2215,14 +2218,14 @@ function syncQuoteLines(rec){
       autoAmount:!!item.autoAmount
     });
   });
-  /* Employee-management functions beyond the included payroll capacity: one standalone scope-based line. */
+  /* Employee-management functions beyond the included payroll capacity: one annual subscription line. */
   rec.outOfScope.filter(item=>item.typeKey==='hr').forEach(item=>{
     desired.push({
       id:'hr:'+item.key,
       desc:(lang==='ar'?item.ar:item.en),
-      typeKey:'scope',
+      typeKey:'addon',
       amount:item.amount!==undefined?item.amount:'',
-      unit:item.unit||'one_time',
+      unit:'per_year',
       autoAmount:!!item.autoAmount
     });
   });
@@ -2413,9 +2416,10 @@ function computeQuoteTotals(){
     else if(l.unit==='per_year') perYear += amt;
   });
   const annualRecurring = perMonth*12 + perYear;
-  const firstYear = base + oneTime + annualRecurring;
-  const renewal = base + annualRecurring;
-  return {base, oneTime, annualRecurring, firstYear, renewal};
+  const annualTotal = base + annualRecurring;
+  const firstYear = annualTotal + oneTime;
+  const renewal = annualTotal;
+  return {base, oneTime, annualRecurring, annualTotal, firstYear, renewal};
 }
 
 function fmtSAR(n){
@@ -2425,8 +2429,9 @@ function fmtSAR(n){
 function updateTotalsDisplay(){
   const tt = computeQuoteTotals();
   document.getElementById('qtBase').textContent = fmtSAR(tt.base);
-  document.getElementById('qtOneTime').textContent = fmtSAR(tt.oneTime);
   document.getElementById('qtRecurring').textContent = fmtSAR(tt.annualRecurring);
+  document.getElementById('qtAnnual').textContent = fmtSAR(tt.annualTotal);
+  document.getElementById('qtOneTime').textContent = fmtSAR(tt.oneTime);
   document.getElementById('qtFirstYear').textContent = fmtSAR(tt.firstYear);
   document.getElementById('qtRenewal').textContent = fmtSAR(tt.renewal);
 }
@@ -2579,8 +2584,8 @@ function exportQuotationExcel(){
     lineRows.push([l.desc, quoteTypeLabel(l.typeKey), Number(l.amount)||0, t('unit_'+l.unit)]);
   });
   lineRows.push(['', '', '', '']);
+  lineRows.push([t('quoteTotalAnnual'), '', tt.annualTotal, '']);
   lineRows.push([t('quoteTotalOneTime'), '', tt.oneTime, '']);
-  lineRows.push([t('quoteTotalRecurring'), '', tt.annualRecurring, '']);
   lineRows.push([t('quoteTotalFirstYear'), '', tt.firstYear, '']);
   lineRows.push([t('quoteTotalRenewal'), '', tt.renewal, '']);
   lineRows.push(['', '', '', '']);
@@ -2676,7 +2681,8 @@ function openQuotationPage(){
       unit,
       rate,
       discType:'pct',
-      discVal:0
+      discVal:0,
+      billingGroup:billingUnit==='one_time' ? 'one_time' : 'annual'
     });
   }
 
@@ -2718,6 +2724,8 @@ function openQuotationPage(){
   let page = QUOTE_TEMPLATE;
   const stampInjector='<script>(function(){var stamp=document.querySelector("img[alt=\\"Galaxy Knowledge Stamp\\"]");if(stamp){stamp.src='+JSON.stringify(OFFICIAL_STAMP_DATA_URI)+';stamp.style.transform="none";stamp.style.opacity="1";}var site=document.querySelector(".thanks .site");if(site){var oldQr=site.querySelector("svg");var img=document.createElement("img");img.src='+JSON.stringify(QUOTATION_QR_DATA_URI)+';img.alt="ZX Website QR";img.style.width="70px";img.style.height="70px";var link=document.createElement("a");link.href='+JSON.stringify(QUOTATION_QR_URL)+';link.target="_blank";link.rel="noopener";link.title='+JSON.stringify(QUOTATION_QR_URL)+';link.appendChild(img);if(oldQr)oldQr.replaceWith(link);else site.prepend(link);site.style.cursor="pointer";}})();<\/script>';
   page=page.replace('</body>',stampInjector+'</body>');
+  const totalsBreakdownInjector='<style>.sum-boxes.commercial-breakdown{flex-wrap:wrap}.sum-boxes.commercial-breakdown .box{flex:1 1 120px}.sum-boxes .box.annual-box{background:#eaf4ff}.sum-boxes .box.annual-box .lbl{color:#0a2a66}.sum-boxes .box.onetime-box{background:#fff8df}.sum-boxes .box.onetime-box .lbl{color:#8a6500}.tot-table tr.commercial-split td{background:#f7faff;font-weight:700}.tot-table tr.commercial-split td.v{color:var(--navy)}@media print{.sum-boxes.commercial-breakdown{display:flex!important;flex-direction:row!important;flex-wrap:nowrap}.sum-boxes.commercial-breakdown .box{min-width:0}}</style><script>(function(){function isAnnualItem(it){if(it&&it.billingGroup)return it.billingGroup==="annual";var u=String((it&&it.unit)||"").toLowerCase();return u.indexOf("year")>=0||u.indexOf("annual")>=0||u.indexOf("month")>=0||u.indexOf("سنة")>=0||u.indexOf("سنوي")>=0||u.indexOf("شهر")>=0;}function breakdown(){var annual=0,oneTime=0;state.items.forEach(function(it){var net=lineAmount(it).net;if(isAnnualItem(it))annual+=net;else oneTime+=net;});var before=annual+oneTime;var quotationDiscount=calcTotals().disc;if(before>0&&quotationDiscount>0){var annualDiscount=quotationDiscount*(annual/before);annual=Math.max(0,annual-annualDiscount);oneTime=Math.max(0,oneTime-(quotationDiscount-annualDiscount));}return{annual:annual,oneTime:oneTime};}function addTotalRow(id,labelId,valueId){var rowNet=document.getElementById("rowNet");if(!rowNet||document.getElementById(id))return;var row=document.createElement("tr");row.id=id;row.className="commercial-split";row.innerHTML="<td class=\\"k\\"><span id=\\""+labelId+"\\"></span></td><td class=\\"v\\" id=\\""+valueId+"\\">SAR 0.00</td>";rowNet.parentNode.insertBefore(row,rowNet);}function ensureUi(){var boxes=document.querySelector(".sum-boxes");if(boxes&&!document.getElementById("boxAnnual")){boxes.classList.add("commercial-breakdown");boxes.insertAdjacentHTML("afterbegin","<div class=\\"box annual-box\\"><div class=\\"lbl\\" id=\\"boxAnnualLbl\\"></div><div class=\\"val\\" id=\\"boxAnnual\\">SAR 0.00</div><div class=\\"note\\" id=\\"boxAnnualNote\\"></div></div><div class=\\"box onetime-box\\"><div class=\\"lbl\\" id=\\"boxOneTimeLbl\\"></div><div class=\\"val\\" id=\\"boxOneTime\\">SAR 0.00</div><div class=\\"note\\" id=\\"boxOneTimeNote\\"></div></div>");}addTotalRow("rowAnnualSplit","totAnnualLbl","totAnnual");addTotalRow("rowOneTimeSplit","totOneTimeLbl","totOneTime");}function renderBreakdown(){ensureUi();var ar=state.lang==="ar",b=breakdown();var labels={annual:ar?"إجمالي الاشتراك السنوي / التجديد":"Annual subscription / renewal",oneTime:ar?"إجمالي البنود لمرة واحدة":"Total one-time items",note:ar?"بعد الخصومات وقبل الضريبة":"After discounts, excluding VAT"};document.getElementById("boxAnnualLbl").textContent=labels.annual;document.getElementById("boxAnnual").textContent=fmt(b.annual);document.getElementById("boxAnnualNote").textContent=labels.note;document.getElementById("boxOneTimeLbl").textContent=labels.oneTime;document.getElementById("boxOneTime").textContent=fmt(b.oneTime);document.getElementById("boxOneTimeNote").textContent=labels.note;document.getElementById("totAnnualLbl").textContent=labels.annual;document.getElementById("totAnnual").textContent=fmt(b.annual);document.getElementById("totOneTimeLbl").textContent=labels.oneTime;document.getElementById("totOneTime").textContent=fmt(b.oneTime);}var baseRenderTotals=renderTotals;renderTotals=function(){baseRenderTotals();renderBreakdown();};renderBreakdown();})();<\/script>';
+  page=page.replace('</body>',totalsBreakdownInjector+'</body>');
   page = page.replace(/__HEADER_B64__/g, toB64(headerData));
   page = page.replace(/__ITEMS_B64__/g, toB64(quoteItems));
   page = page.replace(/__LANG__/g, lang);
